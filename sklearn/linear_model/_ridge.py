@@ -47,6 +47,34 @@ from ..metrics import get_scorer_names
 from ..exceptions import ConvergenceWarning
 from ..utils.sparsefuncs import mean_variance_axis
 
+def dask_svd(X):
+    import math
+    s1, s2 = X.shape
+    print(s1, s2)
+    m = min(s1, s2)
+    M = max(s1, s2)
+    dX = da.from_array(X)
+    b = dX.dtype.itemsize
+    bs = 128*1024*1024  # target block size in bytes
+    if m*b >= bs:
+        if m == s2:
+            print('case 1')
+            shape = (s1, 1)
+        else:
+            print('case 2')
+            shape = (1, s2)
+    else:
+        if m == s2:
+            print('case 3')
+            shape = (min(s1, math.floor(bs/(s2*b))), s2)
+        else:
+            print('case 4')
+            shape = (s1, min(s2, math.floor(bs/(s1*b))))
+    print(f're-chunking array to {shape}')
+    dX = da.rechunk(dX, chunks=shape)
+    print(f'resized array to {dX.shape}')
+    return da.linalg.svd(dX)
+    
 
 def _get_rescaled_operator(X, X_offset, sample_weight_sqrt):
     """Create LinearOperator for matrix products with implicit centering.
@@ -290,7 +318,7 @@ def _solve_cholesky_kernel(K, y, alpha, sample_weight=None, copy=False):
 
 
 def _solve_svd(X, y, alpha):
-    U, s, Vt = da.linalg.svd(da.from_array(X))
+    U, s, Vt = dask_svd(X)
     idx = s > 1e-15  # same default value as scipy.linalg.pinv
     s_nnz = s[idx][:, np.newaxis]
     UTy = np.dot(U.T, y)
@@ -1914,7 +1942,7 @@ class _RidgeGCV(LinearModel):
             # by centering, the other columns are orthogonal to that one
             intercept_column = sqrt_sw[:, None]
             X = np.hstack((X, intercept_column))
-        U, singvals, _ = da.linalg.svd(da.from_array(X))
+        U, singvals, _ = dask_svd(X)
         singvals_sq = singvals**2
         UT_y = np.dot(U.T, y)
         return X_mean, singvals_sq, U, UT_y
