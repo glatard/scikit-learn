@@ -1623,6 +1623,7 @@ class _RidgeGCV(LinearModel):
     """
 
     def __init__(
+        
         self,
         alphas=(0.1, 1.0, 10.0),
         *,
@@ -1633,6 +1634,7 @@ class _RidgeGCV(LinearModel):
         store_cv_values=False,
         is_clf=False,
         alpha_per_target=False,
+        
     ):
         self.alphas = alphas
         self.fit_intercept = fit_intercept
@@ -1642,11 +1644,20 @@ class _RidgeGCV(LinearModel):
         self.store_cv_values = store_cv_values
         self.is_clf = is_clf
         self.alpha_per_target = alpha_per_target
+        import socket
+        import os
+    
+        print(f'MKL_NUM_THREADS: {os.environ.get('MKL_NUM_THREADS')}')
+        print(f'Hostname: {socket.gethostname()}')
 
     @staticmethod
     def _decomp_diag(v_prime, Q):
         # compute diagonal of the matrix: dot(Q, dot(diag(v_prime), Q^T))
         return (v_prime * Q**2).sum(axis=-1)
+
+
+    
+    
 
     @staticmethod
     def _diag_dot(D, B):
