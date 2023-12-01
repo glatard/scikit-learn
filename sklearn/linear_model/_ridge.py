@@ -1647,7 +1647,7 @@ class _RidgeGCV(LinearModel):
         import socket
         import os
     
-        print(f'MKL_NUM_THREADS: {os.environ.get('MKL_NUM_THREADS')}')
+        print(f'MKL_NUM_THREADS: {os.environ.get("MKL_NUM_THREADS")}')
         print(f'Hostname: {socket.gethostname()}')
 
     @staticmethod
