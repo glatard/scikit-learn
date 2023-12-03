@@ -268,8 +268,8 @@ class _MultiOutputEstimator(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta
                 routed_params.estimator.fit["sample_weight"] = sample_weight
 
         
-
-        print('################## new version5_test #####################')
+        
+        print('################## new version6_test #####################')
         n_jobs=self.n_jobs
         print("*********Number of jobs:",n_jobs)
         n_col_y=y.shape[1]
@@ -279,6 +279,17 @@ class _MultiOutputEstimator(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta
             y1=  y[:,int(n_col_y/n_jobs) * i: int(n_col_y/n_jobs) * (i + 1)]      
             print(y1.shape)
 
+        import socket
+        import os
+        self.estimators_ = Parallel(n_jobs=self.n_jobs)(
+            delayed(lambda i: (
+                print(f'MKL_NUM_THREADS: {os.environ.get("MKL_NUM_THREADS")}'),
+                print(f'Hostname: {socket.gethostname()}'),
+                _fit_estimator(self.estimator, X, y[:, int(n_col_y/n_jobs) * i: int(n_col_y/n_jobs) * (i + 1)], **routed_params.estimator.fit)
+            ))(i) for i in range(n_jobs)
+        )
+        
+        '''
         import socket
         import os
         
@@ -293,6 +304,7 @@ class _MultiOutputEstimator(MetaEstimatorMixin, BaseEstimator, metaclass=ABCMeta
             )
             for i in range(n_jobs)
         )
+        '''
 
         '''
 
