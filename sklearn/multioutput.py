@@ -1165,4 +1165,3 @@ class RegressorChain(MetaEstimatorMixin, RegressorMixin, _BaseChain):
 
     def _more_tags(self):
         return {"multioutput_only": True}
-
